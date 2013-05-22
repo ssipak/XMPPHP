@@ -264,7 +264,7 @@ class XMPPHP_XMLStream {
       $ns_tags = array($xpath);
     }
     foreach ($ns_tags as $ns_tag) {
-      list($l, $r) = split("}", $ns_tag);
+      list($l, $r) = explode("}", $ns_tag);
       if ($r != null) {
         $xpart = array(substr($l, 1), $r);
       } else {
@@ -350,7 +350,7 @@ class XMPPHP_XMLStream {
   /**
    * Disconnect from XMPP Host
    */
-  public function disconnect() {
+  public function disconnect($timeout = 5) {
     $this->log->log("Disconnecting...", XMPPHP_Log::LEVEL_VERBOSE);
     if (false == (bool) $this->socket) {
       return;
@@ -358,7 +358,7 @@ class XMPPHP_XMLStream {
     $this->reconnect = false;
     $this->send($this->stream_end);
     $this->sent_disconnect = true;
-    $this->processUntil('end_stream', 5);
+    $this->processUntil('end_stream', $timeout);
     $this->disconnected = true;
   }
 
@@ -402,7 +402,10 @@ class XMPPHP_XMLStream {
         if ($this->reconnect) {
           $this->doReconnect();
         } else {
-          fclose($this->socket);
+          if (is_resource($this->socket))
+          {
+            fclose($this->socket);
+          }
           $this->socket = NULL;
           return false;
         }
@@ -413,7 +416,10 @@ class XMPPHP_XMLStream {
           if ($this->reconnect) {
             $this->doReconnect();
           } else {
-            fclose($this->socket);
+            if (is_resource($this->socket))
+            {
+              fclose($this->socket);
+            }
             $this->socket = NULL;
             return false;
           }
@@ -611,7 +617,10 @@ class XMPPHP_XMLStream {
         }
         $this->disconnected = true;
         $this->sent_disconnect = true;
-        fclose($this->socket);
+        if (is_resource($this->socket))
+        {
+          fclose($this->socket);
+        }
         if ($this->reconnect) {
           $this->doReconnect();
         }
@@ -672,7 +681,10 @@ class XMPPHP_XMLStream {
       if ($this->reconnect) {
         $this->doReconnect();
       } else {
-        fclose($this->socket);
+        if (is_resource($this->socket))
+        {
+          fclose($this->socket);
+        }
         return false;
       }
     }
